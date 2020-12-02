@@ -1,6 +1,8 @@
-const input = require('./input.json');
+const getData = require('../helpers');
 
 const RE = /(\d{1,3})-(\d{1,3}).(\w):.(\w*)/;
+
+const readFile = () => getData().then((data) => data.split('\n').filter(n => n));
 
 const translate = (str, regex=RE) => {
   const [wm, from, to, char, passwd] = str.match(regex);
@@ -27,9 +29,8 @@ const validates2 = ({ from: pos1, to: pos2, char, passwd }) => {
   return oneEqualsChar && notBothEqualChar;
 };
 
-const part1 = () => input.filter((str) => validates1(translate(str))).length;
+const part1 = readFile().then((data) => data.filter((str) => validates1(translate(str))).length);
+const part2 = readFile().then((data) => data.filter((str) => validates2(translate(str))).length);
 
-const part2 = () => input.filter((str) => validates2(translate(str))).length;
-
-console.log(part1());
-console.log(part2());
+setTimeout(() => console.log(part1), 2000);
+setTimeout(() => console.log(part2), 4000);
