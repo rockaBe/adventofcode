@@ -4,7 +4,9 @@ const input = require('./input.json');
 const target = 2020;
 const length = input.length-1;
 
+// brute force for loops
 const part1 = () => {
+  const start = new Date().getTime();
   let num1, num2;
   for (let i=0; i<length; i++) {
     for (let j=length; j>=0; j--) {
@@ -15,7 +17,8 @@ const part1 = () => {
       }
     }
   }
-  return { num1, num2, product: num1 * num2 };
+  const stop = new Date().getTime();
+  return { num1, num2, product: num1 * num2, time: `${stop-start}ms` };
 }
 
 // sort array in descending order
@@ -27,6 +30,7 @@ const part1 = () => {
 // by decreasing index of right
 
 const part2 = () => {
+  const start = new Date().getTime();
   let left = 0;
   let middle = 1;
   let right = 2;
@@ -39,22 +43,22 @@ const part2 = () => {
     if (sum === target) {
       found = true;
     } else if (sum < target) {
-      console.log('smaller')
       right--;
     } else if (sum > target) {
-      console.log('bigger')
       left++;
       middle++;
       right++;
     }
   }
 
+  const stop = new Date().getTime();
   return {
     num1: sorted[left],
     num2: sorted[middle],
     num3: sorted[right],
     sum: sorted[left] + sorted[middle] + sorted[right],
-    product: sorted[left] * sorted[middle] * sorted[right]
+    product: sorted[left] * sorted[middle] * sorted[right],
+    time: `${stop-start}ms`
   }
 }
 
