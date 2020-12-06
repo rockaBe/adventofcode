@@ -1,7 +1,7 @@
 const fs = require("fs").promises;
 
-const getData = async () => {
-  const fname = "input.txt";
+const getData = async (param=null) => {
+  const fname = param ? "sample.txt" : "input.txt";
 
   let data;
   try {
