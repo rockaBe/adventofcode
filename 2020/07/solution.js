@@ -1,67 +1,54 @@
 const fs = require('fs');
 
-const rules = fs.readFileSync('./input.txt', 'utf-8').split('\n').filter(n => n)
-  .map((rule) => {
-    const split = rule.split('contain');
-    const colorBag = split[0].replace(/\sbags\s/, '');
-    const contains = split[1].split(',').map(
-      bag => {
-        const match = bag.match(/\d+.(\w+\s\w+)/);
-        if (match) { return match[1] }
-      }
-    );
-    console.log('::: ', { colorBag, contains });
-    return { colorBag, contains };
-  });
+// used for both parts with different mapping functions
+const rules = (mapFun) =>
+  fs.readFileSync('./input.txt', 'utf-8').split('\n').filter(n => n)
+    .map((rule) => {
+      const split = rule.split('contain');
+      const colorBag = split[0].replace(/\sbags\s/, '');
+      const contains = split[1].split(',').map(mapFun)
 
+      return { colorBag, contains };
+    });
+
+// mapping functions
+
+// part 1: extract array of color strings
+const extractColorStringArray = (bag) => {
+  const match = bag.match(/\d+.(\w+\s\w+)/);
+  if (match) { return match[1] }
+};
+
+// part 2: extract an object with keys number:<Integer> and color:<String>
+const extractColorNumberObject = (bag) => {
+  const match = bag.match(/([1-9]+).(\w+\s\w+)/);
+  if (match) {
+    return { number: match[1], color: match[2] }
+  }
+  return { color: bag, number: 0 }
+};
+
+// receives an array of color strings
 const getColorBags = (bags) => {
   const colorBags = bags.map(bag =>
-    rules.filter((rule) => {
-      // console.log('rule.contains: ', rule.contains);
-      return rule.contains.includes(bag)
-    })
+    rules(extractColorStringArray).filter((rule) => rule.contains.includes(bag))
       .map(rule => rule.colorBag)).flat();
 
   if (colorBags.length === 0) return null;
 
-  const allColorBags = [
-    colorBags,
-    getColorBags(colorBags)
-  ]
-    .flat()
+  const allColorBags = [colorBags, getColorBags(colorBags)].flat()
     .filter(
-      (n, i, a) => !!n && a.indexOf(n) === i
+      (color, index, array) => !!color && array.indexOf(color) === index
     );
   return allColorBags;
 };
 
-const part1 = getColorBags(['shiny gold']).flat().length;
-console.log('PART 1:');
-console.log('number of bag colors that can eventually contain at least 1 bag of color: shiny gold');
-console.log(part1);
+const getFlatLength = (bags) => getColorBags(bags).flat().length;
 
-const rules2 = fs.readFileSync('./input.txt', 'utf-8').split('\n').filter(n => n)
-  .map((rule) => {
-    const split = rule.split('contain');
-    const colorBag = split[0].replace(/\sbags\s/, '');
-    const contains = split[1].split(',').map(
-      bag => {
-        const match = bag.match(/([1-9]+).(\w+\s\w+)/);
-        if (match) {
-          return { number: match[1], color: match[2] }
-        } else {
-          return { color: bag, number: 0 }
-        }
-      }
-    );
-    return { colorBag, contains };
-  }).filter(n => n);
-
+// receives an object with keys :number and :color
 const getAllNeededBags = (bag) => {
-  const colorBags = rules2.filter((rule) => rule.colorBag === bag.color)
-  .flat()
-  .map(rule => rule.contains)
-  .flat()
+  const colorBags = rules(extractColorNumberObject).filter((rule) => rule.colorBag === bag.color)
+  .map(rule => rule.contains).flat()
   .filter(rule => rule.number != 0);
 
   if (colorBags.length === 0) return 0;
@@ -71,7 +58,11 @@ const getAllNeededBags = (bag) => {
     .reduce((memo, count) => memo + count, 0);
 };
 
+// number of bag colors that can eventually
+// contain at least 1 bag of color: shiny gold
+const part1 = getFlatLength(['shiny gold']);
+console.log(part1);
+
+// number of bags required inside my shiny golden bag
 const part2 = getAllNeededBags({color: 'shiny gold', number: 1});
-console.log('PART 2:');
-console.log('number of bags required inside my shiny golden bag:');
 console.log(part2)
