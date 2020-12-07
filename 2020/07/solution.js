@@ -1,4 +1,3 @@
-const { count } = require('console');
 const fs = require('fs');
 
 const rules = fs.readFileSync('./input.txt', 'utf-8').split('\n').filter(n => n)
