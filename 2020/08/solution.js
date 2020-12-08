@@ -1,11 +1,5 @@
 const getData = require('../helpers');
 
-const numberify = (str) => {
-  const split = str.split('');
-  if (split[0] === '+') { delete split[0] };
-  return parseInt(split.join(''), 10);
-};
-
 const parseInput = async () =>
   getData().then((data) =>
     data.split('\n').filter(n => n)
@@ -13,15 +7,17 @@ const parseInput = async () =>
 
 const splitCommandAndVal = (el) => {
   const [cmd, sVal] = el.split(' ');
-  return { cmd, val: numberify(sVal) };
+  return { cmd, val: parseInt(sVal) };
 };
 
-const runCommands = (parsed) => {
+const runCommands = (commands) => {
   const state = { accumulator: 0, index: 0, visited: [], hasFinished: false };
   while (true) {
-    if (state.index < 0 || state.index > parsed.length - 1) { break; }
+    // terminate when we visited this command before (part1)
     if (state.visited.includes(state.index)) { break; }
-    const { cmd, val } = parsed[state.index]
+    // avoid getting out of array bounds
+    if (state.index < 0 || state.index > commands.length -1) { break; }
+    const { cmd, val } = commands[state.index]
     state.visited.push(state.index);
     switch (cmd) {
       case 'acc':
@@ -34,7 +30,8 @@ const runCommands = (parsed) => {
       case 'nop':
         state.index++;
     }
-    if (Math.max(...state.visited) === parsed.length - 1) {
+    // we reached the end of the command chain
+    if (Math.max(...state.visited) === commands.length - 1) {
       state.hasFinished = true;
       break;
     }
@@ -48,20 +45,22 @@ const part1 = async () => {
 };
 
 const part2 = async () => {
-  const parsed = await parseInput();
-  const changes = { nop: 'jmp', jmp: 'nop' };
+  const commands = await parseInput();
+  const swappers = { nop: 'jmp', jmp: 'nop' };
   let result = null;
   let swapIndex = 0;
-  while (swapIndex < parsed.length) {
-    if (Object.keys(changes).includes(parsed[swapIndex].cmd)) {
-      parsed[swapIndex].cmd = changes[parsed[swapIndex].cmd];
-      const { accumulator, hasFinished } = runCommands(parsed);
+  let currentCmd;
+  while (swapIndex < commands.length) {
+    currentCmd = commands[swapIndex].cmd;
+    if (Object.keys(swappers).includes(currentCmd)) {
+      commands[swapIndex].cmd = swappers[currentCmd];
+      const { accumulator, hasFinished } = runCommands(commands);
       if (hasFinished) {
         result = accumulator;
         break;
       }
       // we need to reset the changed command
-      parsed[swapIndex].cmd = changes[parsed[swapIndex].cmd];
+      commands[swapIndex].cmd = swappers[commands[swapIndex].cmd];
     }
     swapIndex++;
   }
