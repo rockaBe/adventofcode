@@ -1,11 +1,5 @@
 const getData = require('../helpers');
 
-const numberify = (str) => {
-  const split = str.split('');
-  if (split[0] === '+') { delete split[0] };
-  return parseInt(split.join(''), 10);
-};
-
 const parseInput = async () =>
   getData().then((data) =>
     data.split('\n').filter(n => n)
@@ -13,13 +7,12 @@ const parseInput = async () =>
 
 const splitCommandAndVal = (el) => {
   const [cmd, sVal] = el.split(' ');
-  return { cmd, val: numberify(sVal) };
+  return { cmd, val: parseInt(sVal) };
 };
 
 const runCommands = (parsed) => {
   const state = { accumulator: 0, index: 0, visited: [], hasFinished: false };
   while (true) {
-    if (state.index < 0 || state.index > parsed.length - 1) { break; }
     if (state.visited.includes(state.index)) { break; }
     const { cmd, val } = parsed[state.index]
     state.visited.push(state.index);
@@ -56,10 +49,7 @@ const part2 = async () => {
     if (Object.keys(changes).includes(parsed[swapIndex].cmd)) {
       parsed[swapIndex].cmd = changes[parsed[swapIndex].cmd];
       const { accumulator, hasFinished } = runCommands(parsed);
-      if (hasFinished) {
-        result = accumulator;
-        break;
-      }
+      if (hasFinished) { result = accumulator; break; }
       // we need to reset the changed command
       parsed[swapIndex].cmd = changes[parsed[swapIndex].cmd];
     }
