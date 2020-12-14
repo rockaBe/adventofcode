@@ -14,10 +14,9 @@ const parseInput = async (sample=null) =>
       .sort((a, b) => a-b));
 
 const inBetween = (val, lo) => lo < val && val <= lo + deviceBuiltInadapterBuffer;
+const appendInitState = (data) => [outletEffectiveRating, ...data, data[data.length - 1] + deviceBuiltInadapterBuffer];
 
 const stepThrough = (data) => {
-  data.push(data[data.length-1]+deviceBuiltInadapterBuffer);
-  data.unshift(outletEffectiveRating);
   const matches = [];
   const jumps = { 1: [], 3: [] };
   data.forEach((_, i) => {
@@ -47,8 +46,24 @@ const stepThrough = (data) => {
   return jumps;
 }
 
+const getAllPossibilities = (data) => {
+  const result = data.reduce((options, num, index, data) => {
+    for (let i = index + 1; i < data.length; i++) {
+      if (data[i] - num <= 3) {
+        if (options[i] === undefined) {
+          options[i] = 0
+        }
+        options[i] += options[index];
+      } else break;
+    }
+    return options;
+  }, [1]);
+  return result[result.length - 1];
+}
+
 parseInput().then(data => {
-  const result = stepThrough(data);
+  const result = stepThrough(appendInitState(data));
   console.log(`1 jolt: ${result[1].length} 3 jolt: ${result[3].length}`);
   console.log(`Part 1: ${result[1].length * result[3].length}`);
+  console.log(`Part 2: ${getAllPossibilities(appendInitState(data))}`);
 });
